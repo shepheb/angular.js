@@ -50,12 +50,26 @@ function Browser(window, document, $log, $sniffer) {
     } finally {
       outstandingRequestCount--;
       if (outstandingRequestCount === 0) {
-        while(outstandingRequestCallbacks.length) {
-          try {
-            outstandingRequestCallbacks.pop()();
-          } catch (e) {
-            $log.error(e);
-          }
+        console.log('creating timeout');
+        setTimeout(outstandingRequestsComplete, 0);
+      }
+    }
+  }
+
+  /**
+   * @private
+   * Called asynchronously by `completeOutstandingRequest`. Calls all callbacks waiting for the
+   * requests to complete.
+   */
+  function outstandingRequestsComplete() {
+    // Check again for outstanding requests; one might have been added in the meantime.
+    console.log('running timeout');
+    if (outstandingRequestCount === 0) {
+      while(outstandingRequestCallbacks.length) {
+        try {
+          outstandingRequestCallbacks.pop()();
+        } catch (e) {
+          $log.error(e);
         }
       }
     }
